@@ -100,10 +100,45 @@ class Spec3 extends Specification {
     result.runCount == runCount
     result.failureCount == 0
     result.ignoreCount == 3 - runCount // cannot prevent JUnit from running excluded specs, so they get ignored
-    
+
     where:
     annTypes1   << [[Slow], [Slow], [Slow],       [Fast], [Fast], [Fast],       [Slow, Fast], [Slow, Fast], [Slow, Fast]]
     annTypes2   << [[Slow], [Fast], [Slow, Fast], [Slow], [Fast], [Slow, Fast], [Slow],       [Fast],       [Slow, Fast]]
     runCount    << [0,      1,      0,            1,      0,      0,            1,            1,            0           ]
   }
+
+  def "include specs incorrectly"() {
+    runner.configurationScript = {
+      runner {
+        include Slow
+        include Fast
+      }
+    }
+
+    when:
+    def result = runner.runClasses(specs)
+
+    then:
+    result.runCount == 2
+    result.failureCount == 0
+    result.ignoreCount == 3 - runCount // cannot prevent JUnit from running excluded specs, so they get ignored
+  }
+
+ def "exclude specs incorrectly"() {
+    runner.configurationScript = {
+      runner {
+        exclude Slow
+        exclude Fast
+      }
+    }
+
+    when:
+    def result = runner.runClasses(specs)
+
+    then:
+    result.runCount == 1
+    result.failureCount == 0
+    result.ignoreCount == 3 - runCount // cannot prevent JUnit from running excluded specs, so they get ignored
+  }
+
 }
